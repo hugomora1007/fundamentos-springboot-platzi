@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.domain.Sort;
 
 import com.fundamentosplatzi.springboot.fundamentos.bean.MyBean;
 import com.fundamentosplatzi.springboot.fundamentos.bean.MyBeanWithDependency;
@@ -30,7 +31,7 @@ public class FundamentosApplication implements CommandLineRunner {
 	private MyBeanWithDependency myBeanWithDependency;
 	private MyBeanWithProperties myBeanWithProperties;
 	private UserPojo userPojo;
-	
+
 	private UserRepository userRepository;
 
 	public FundamentosApplication(@Qualifier("componentTwoImplement") ComponentDependency componentDependency,
@@ -50,10 +51,53 @@ public class FundamentosApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		//ejemplosAnteriores();
+		// ejemplosAnteriores();
 		saveUsersInDataBase();
+		getInformationJpqlFromUser();
 	}
-	
+
+	private void getInformationJpqlFromUser() {
+		LOGGER.info("Uusario con el metodo findByUserEmail " + this.userRepository.findByUserEmail("julie@domain.com")
+				.orElseThrow(() -> new RuntimeException("No se encontro el usuario")));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findAndSort("Ju", Sort.by("id").descending()).stream()
+				.forEach(user -> LOGGER.info("Usuario con metodo sort " + user));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByName("Anna").stream()
+				.forEach(user -> LOGGER.info("Usuario con query method " + user));
+
+		LOGGER.info("--------------------------");
+		LOGGER.info("Usuario con query method findByEmailAndName: "
+				+ this.userRepository.findByEmailAndName("richard@domain.com", "Richard")
+						.orElseThrow(() -> new RuntimeException("Usuario no encontrado")));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByNameLike("%a%").stream()
+				.forEach(user -> LOGGER.info("Usuario findByNameLike: " + user));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByNameOrEmail(null, "peter@domain.com").stream()
+				.forEach(user -> LOGGER.info("Usuario findByNameOrEmail mail: " + user));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByNameOrEmail("Roxanna", null).stream()
+				.forEach(user -> LOGGER.info("Usuario findByNameOrEmail name: " + user));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByBirthDateBetween(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)).stream()
+				.forEach(user -> LOGGER.info("Usuario findByBirthDateBetween name: " + user));
+
+		LOGGER.info("--------------------------");
+		this.userRepository.findByNameLikeOrderByIdDesc("%a%").stream()
+				.forEach(user -> LOGGER.info("Usuario findByNameLikeOrderByIdDesc name: " + user));
+		
+		LOGGER.info("--------------------------");
+		this.userRepository.findByNameContainingOrderByIdDesc("na").stream()
+				.forEach(user -> LOGGER.info("Usuario findByNameContainingOrderByIdDesc name: " + user));
+	}
+
 	private void saveUsersInDataBase() {
 		User user1 = new User("John", "john@domain.com", LocalDate.of(2000, 5, 10));
 		User user2 = new User("Julie", "julie@domain.com", LocalDate.of(2005, 6, 11));
@@ -67,10 +111,10 @@ public class FundamentosApplication implements CommandLineRunner {
 		User user10 = new User("Peter", "peter@domain.com", LocalDate.of(2005, 10, 25));
 		User user11 = new User("Sophy", "sophy@domain.com", LocalDate.of(2005, 11, 29));
 		User user12 = new User("Carla", "carla@domain.com", LocalDate.of(2005, 6, 14));
-		
+
 		List<User> list = Arrays.asList(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11,
 				user12);
-		list.stream().forEach(this.userRepository::save);		
+		list.stream().forEach(this.userRepository::save);
 	}
 
 	private void ejemplosAnteriores() {
