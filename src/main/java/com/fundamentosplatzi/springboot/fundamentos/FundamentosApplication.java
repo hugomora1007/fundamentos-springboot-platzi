@@ -96,6 +96,10 @@ public class FundamentosApplication implements CommandLineRunner {
 		LOGGER.info("--------------------------");
 		this.userRepository.findByNameContainingOrderByIdDesc("na").stream()
 				.forEach(user -> LOGGER.info("Usuario findByNameContainingOrderByIdDesc name: " + user));
+		
+		LOGGER.info("EL usuario a partir del named parameter es: " + this.userRepository
+				.getAllByBirthDateAndEmail(LocalDate.of(2005, 10, 13), "richard@domain.com")
+				.orElseThrow(() -> new RuntimeException("No se encontro el usuario a partir del named parameter")));
 	}
 
 	private void saveUsersInDataBase() {
